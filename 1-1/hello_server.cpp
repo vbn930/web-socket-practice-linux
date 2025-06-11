@@ -12,13 +12,14 @@ int main(int argc, char *argv[]){
     struct sockaddr_in clnt_addr;
     socklen_t clnt_addr_size;
 
-    char *message = "Hello World";
+    char message[] = "Hello World";
 
     if(argc != 2){
         std::cout << "Usage : " << argv[0] << " <port>\n";
         exit(1);
     }
 
+    //socket 함수는 소켓을 생성 후 해당 소켓에 대한 파일 디스럽터를 반환한다 (int 값).
     serv_sock = socket(PF_INET, SOCK_STREAM, 0);
     if(serv_sock == -1){
         std::cerr << "socket() error\n";
@@ -43,7 +44,10 @@ int main(int argc, char *argv[]){
         std::cerr << "accept() error\n";
     }
 
+    //write 함수는 파일에 데이터를 출력 (소켓의 경우엔 전송) 하는 함수이다 -> 파일과 소켓에서 모두 사용한다.
     write(clnt_sock, message, sizeof(message));
+
+    //close 함수는 파일, 소켓을 닫을때 공통적으로 사용한다 -> 파일과 소켓을 구분하지 않는 리눅스의 특성 때문이다.
     close(clnt_sock);
     close(serv_sock);
     return 0;
