@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <unistd.h>
+#include <string.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
@@ -12,7 +13,7 @@ int main(int argc, char *argv[]){
     struct sockaddr_in clnt_addr;
     socklen_t clnt_addr_size;
 
-    char message[] = "Hello World";
+    char* messages[] = { "Hello World1", "Hello World2", "Hello World3", "Hello World4" };
 
     if(argc != 2){
         std::cout << "Usage : " << argv[0] << " <port>\n";
@@ -49,7 +50,11 @@ int main(int argc, char *argv[]){
     }
 
     //write 함수는 파일에 데이터를 출력 (소켓의 경우엔 전송) 하는 함수이다 -> 파일과 소켓에서 모두 사용한다.
-    write(clnt_sock, message, sizeof(message));
+    for(int i = 0; i < 4; i++){
+        char* message = messages[i];
+        write(clnt_sock, messages[i], strlen(message));
+        std::cout << "Send message: " << message << " Message size: " << strlen(message) << "\n";
+    }
 
     //close 함수는 파일, 소켓을 닫을때 공통적으로 사용한다 -> 파일과 소켓을 구분하지 않는 리눅스의 특성 때문이다.
     close(clnt_sock);

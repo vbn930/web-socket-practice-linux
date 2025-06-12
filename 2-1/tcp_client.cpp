@@ -7,7 +7,7 @@
 int main(int argc, char *argv[]){
     int sock;
     struct sockaddr_in serv_addr;
-    char message[30];
+    char message[100];
     int str_len = 0;
 
     int idx = 0, read_len = 0;
@@ -33,17 +33,14 @@ int main(int argc, char *argv[]){
         exit(1);
     }
 
-    while(read_len = read(sock, &message[idx++], 1)){
-        if(str_len == -1){
-            std::cerr << "read() error\n";
-            exit(1);
-        }
-
-        str_len += read_len;
+    for(int i = 0; i < 3000; i++){
+        std::cout << "Wait time: " << i << "\n";
     }
+    
+    str_len = read(sock, message, sizeof(message));
 
     std::cout << "Message for server: " << message << "\n";
-    std::cout << "Function read call count: " << str_len << "\n";
+    std::cout << "Read call count: " << str_len << "\n";
     close(sock);
     return 0;
 }
