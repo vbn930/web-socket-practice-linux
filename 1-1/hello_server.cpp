@@ -30,6 +30,11 @@ int main(int argc, char *argv[]){
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     serv_addr.sin_port = htons(atoi(argv[1]));
 
+    sockaddr_in serv_addr_test = sockaddr_in{};
+    serv_addr_test.sin_family = AF_INET;
+    serv_addr_test.sin_addr.s_addr = htonl(INADDR_ANY);
+    serv_addr_test.sin_port = htons(atoi(argv[1]));
+
     if(bind(serv_sock, (struct sockaddr*) &serv_addr, sizeof(serv_addr))==-1){
         std::cerr << "bind() error\n";
     }
