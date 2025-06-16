@@ -48,13 +48,7 @@ int main(int argc, char* argv[]){
 
     recv_cnt = 0;
     recv_len = 0;
-    while(recv_cnt < recv_len){
-        recv_cnt = read(clnt_sock, &message[recv_len], BUF_SIZE);
-        if(recv_cnt == -1){
-            error_handling("read()");
-        }
-        recv_len += recv_cnt;
-    }
+    recv_len = read(clnt_sock, message, BUF_SIZE);
     
     num_cnt = message[0] - '0';
     num_operator = message[recv_len-1];

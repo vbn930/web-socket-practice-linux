@@ -49,9 +49,11 @@ int main(int argc, char* argv[]){
     message[num_cnt*sizeof(int)+1] = num_operator;
 
     write(sock, message, num_cnt*sizeof(int)+2);
-    read(sock,message, sizeof(int));
+
+    int result;
+    read(sock, &result, BUF_SIZE);
     
-    std::cout << "Result: " << message << std::endl;
+    std::cout << "Result: " << result << std::endl;
     close(sock);
     return 0;
 }
