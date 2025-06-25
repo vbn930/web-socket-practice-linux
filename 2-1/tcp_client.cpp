@@ -3,11 +3,12 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#define BUF_SIZE 100
 
 int main(int argc, char *argv[]){
     int sock;
     struct sockaddr_in serv_addr;
-    char message[100];
+    char message[BUF_SIZE];
     int str_len = 0;
 
     int idx = 0, read_len = 0;
