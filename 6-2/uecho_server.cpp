@@ -11,7 +11,6 @@ void error_handling(const char* message);
 
 int main(int argc, char* argv[]){
     int serv_sock;
-    char message[BUF_SIZE];
     int str_len;
     socklen_t clnt_adr_sz;
 
@@ -36,9 +35,19 @@ int main(int argc, char* argv[]){
     }
 
     while(true){
+        char message[BUF_SIZE];
         clnt_adr_sz = sizeof(clnt_adr);
         str_len = recvfrom(serv_sock, message, BUF_SIZE, 0, (sockaddr*) &clnt_adr, &clnt_adr_sz);
-        sendto(serv_sock, message, str_len, 0, (sockaddr*) &clnt_adr, clnt_adr_sz);
+
+        std::cout << "Message from client: " << message << "\n";
+
+        std::cout << "Input (Q or q to quit): ";
+        std::cin >> message;
+        if(!strcmp(message, "Q") || !strcmp(message, "q")){
+            break;
+        }
+
+        sendto(serv_sock, message, strlen(message), 0, (sockaddr*) &clnt_adr, clnt_adr_sz);
     }
 
     close(serv_sock);
