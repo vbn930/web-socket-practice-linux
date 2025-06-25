@@ -11,7 +11,6 @@ void error_handling(const char* message);
 
 int main(int argc, char* argv[]){
     int sock;
-    char message[BUF_SIZE];
     int str_len;
     socklen_t adr_sz;
 
@@ -32,6 +31,8 @@ int main(int argc, char* argv[]){
     serv_adr.sin_port = htons(atoi(argv[2]));
 
     while(true){
+        char message[BUF_SIZE];
+        
         std::cout << "Input (Q or q to quit): ";
         std::cin >> message;
         if(!strcmp(message, "Q") || !strcmp(message, "q")){
