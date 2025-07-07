@@ -45,31 +45,31 @@ int main(int argc, char* argv[]){
     }
 
     epfd = epoll_create(EPOLL_SIZE);
-    ep_events = (epoll_event*) malloc(sizeof(epoll_event) * EPOLL_SIZE);
+    ep_events = (epoll_event*) malloc(sizeof(epoll_event) * EPOLL_SIZE); // epoll 인스턴스를 동적으로 할당 (생성될 소켓이 저장되는 배열)
 
     event.events = EPOLLIN;
     event.data.fd = sock_server;
-    epoll_ctl(epfd, EPOLL_CTL_ADD, sock_server, &event);
+    epoll_ctl(epfd, EPOLL_CTL_ADD, sock_server, &event); // 서버 소켓을 epoll에 넣음
 
     while(true){
-        event_cnt = epoll_wait(epfd, ep_events, EPOLL_SIZE, -1);
+        event_cnt = epoll_wait(epfd, ep_events, EPOLL_SIZE, -1); // epoll에 있는 소켓에 이벤트가 발생할때 까지 대기
         if(event_cnt == -1){
             std::cerr << "epoll_wait() error!" << std::endl;
             break;
         }
 
         for(int i = 0; i < event_cnt; i++){
-            if(ep_events[i].data.fd == sock_server){
+            if(ep_events[i].data.fd == sock_server){ // 서버 소켓에 이벤트가 발생 = 클라이언트 소켓의 연결 요청
                 clnt_addr_sz = sizeof(clnt_addr);
                 sock_clnt = accept(sock_server, (sockaddr*) &clnt_addr, &clnt_addr_sz);
                 event.data.fd = sock_clnt;
                 event.events = EPOLLIN;
-                epoll_ctl(epfd, EPOLL_CTL_ADD, sock_clnt, &event);
+                epoll_ctl(epfd, EPOLL_CTL_ADD, sock_clnt, &event); // 클라이언트 소켓을 epoll에 등록
                 std::cout << "connected client: " << sock_clnt << "\n";
             }else{
                 str_len = read(ep_events[i].data.fd, message, BUF_SIZE);
                 if(str_len == 0){
-                    epoll_ctl(epfd, EPOLL_CTL_DEL, ep_events[i].data.fd, NULL);
+                    epoll_ctl(epfd, EPOLL_CTL_DEL, ep_events[i].data.fd, NULL); // epoll 인스턴스에서 종료된 클라이언트 소켓 삭제
                     close(ep_events[i].data.fd);
                     std::cout << "closed clinet: " << ep_events[i].data.fd << "\n";
                 }else{
