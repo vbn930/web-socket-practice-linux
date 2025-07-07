@@ -40,8 +40,18 @@ int main(int argc, char* argv[]){
             break;
         }
 
-        write(sock, message, strlen(message));
-        str_len = read(sock, message, BUF_SIZE-1);
+        str_len = strlen(message);
+        write(sock, message, str_len);
+        int recv_len = 0, total_len = 0;
+        char buf[BUF_SIZE];
+        while(total_len < str_len){
+            recv_len = read(sock, buf, BUF_SIZE-1);
+            if(recv_len == 0){
+                break;
+            }
+            total_len += recv_len;
+            strcpy((char*) message + total_len, buf);
+        }
         message[str_len] = 0;
         std::cout << "Message from server: " << message << "\n";
     }
