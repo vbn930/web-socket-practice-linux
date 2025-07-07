@@ -6,10 +6,13 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/epoll.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #define BUF_SIZE 4
 #define EPOLL_SIZE 50
 
+void setnonblockingmode(int fd);
 void error_handling(const char* message);
 
 int main(int argc, char* argv[]){
@@ -47,6 +50,7 @@ int main(int argc, char* argv[]){
     epfd = epoll_create(EPOLL_SIZE);
     ep_events = (epoll_event*) malloc(sizeof(epoll_event) * EPOLL_SIZE); // epoll 인스턴스를 동적으로 할당 (생성될 소켓이 저장되는 배열)
 
+    setnonblockingmode(sock_server);
     event.events = EPOLLIN;
     event.data.fd = sock_server;
     epoll_ctl(epfd, EPOLL_CTL_ADD, sock_server, &event); // 서버 소켓을 epoll에 넣음
@@ -64,22 +68,25 @@ int main(int argc, char* argv[]){
             if(ep_events[i].data.fd == sock_server){ // 서버 소켓에 이벤트가 발생 = 클라이언트 소켓의 연결 요청
                 clnt_addr_sz = sizeof(clnt_addr);
                 sock_clnt = accept(sock_server, (sockaddr*) &clnt_addr, &clnt_addr_sz);
+                setnonblockingmode(sock_clnt);
                 event.data.fd = sock_clnt;
-                event.events = EPOLLIN;
+                event.events = EPOLLIN|EPOLLET; // Edge trigger 설정
                 epoll_ctl(epfd, EPOLL_CTL_ADD, sock_clnt, &event); // 클라이언트 소켓을 epoll에 등록
                 std::cout << "connected client: " << sock_clnt << "\n";
             }else{
-                /*
-                    Level trigger 방식에서는 버퍼에 데이터가 있으면 무조건 이벤트를 발생시키기 때문에 
-                    while문이 필요없이 for문에서 이벤트를 감지해서 계속 남은 데이터를 read & write 한다.
-                */ 
-                str_len = read(ep_events[i].data.fd, message, BUF_SIZE);
-                if(str_len == 0){
-                    epoll_ctl(epfd, EPOLL_CTL_DEL, ep_events[i].data.fd, NULL); // epoll 인스턴스에서 종료된 클라이언트 소켓 삭제
-                    close(ep_events[i].data.fd);
-                    std::cout << "closed clinet: " << ep_events[i].data.fd << "\n";
-                }else{
-                    write(ep_events[i].data.fd, message, str_len);
+                while(true){
+                    str_len = read(ep_events[i].data.fd, message, BUF_SIZE);
+                    if(str_len == 0){
+                        epoll_ctl(epfd, EPOLL_CTL_DEL, ep_events[i].data.fd, NULL); // epoll 인스턴스에서 종료된 클라이언트 소켓 삭제
+                        close(ep_events[i].data.fd);
+                        std::cout << "closed clinet: " << ep_events[i].data.fd << "\n";
+                    }else if(str_len < 0){
+                        if(errno == EAGAIN){
+                            break;
+                        }
+                    }else{
+                        write(ep_events[i].data.fd, message, str_len);
+                    }
                 }
             }
         }
@@ -88,6 +95,11 @@ int main(int argc, char* argv[]){
     close(sock_server);
     close(epfd);
     return 0;
+}
+
+void setnonblockingmode(int fd){
+    int flag = fcntl(fd, F_GETFL, 0);
+    fcntl(fd, F_SETFL, flag|O_NONBLOCK);
 }
 
 void error_handling(const char* message){
