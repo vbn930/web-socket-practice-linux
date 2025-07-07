@@ -77,7 +77,7 @@ int main(int argc, char* argv[]){
                 if(str_len == 0){
                     epoll_ctl(epfd, EPOLL_CTL_DEL, ep_events[i].data.fd, NULL); // epoll 인스턴스에서 종료된 클라이언트 소켓 삭제
                     close(ep_events[i].data.fd);
-                    std::cout << "closed clinet: " << ep_events[i].data.fd << "\n";
+                    std::cout << "closed client: " << ep_events[i].data.fd << "\n";
                 }else{
                     write(ep_events[i].data.fd, message, str_len);
                 }
